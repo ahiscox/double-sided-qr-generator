@@ -108,11 +108,11 @@ def draw_page(c, uuids, rows, cols, start_x, start_y, cell_size, temp_dir, page_
             temp_file_path = os.path.join(temp_dir, f"qr_{page_set}_{idx}.png")
             qr_img.save(temp_file_path)
             
-            # Calculate QR code position with 10px margin
+            # Calculate QR code position with 10px margin and vertical offset
             qr_margin = 10
             qr_size = cell_size - (2 * qr_margin)
             qr_x = x + qr_margin
-            qr_y = y + qr_margin
+            qr_y = y + qr_margin + (cell_size - qr_size) * 0.3  # Move up by 30% of remaining space
             
             # Draw QR code
             c.drawImage(temp_file_path, qr_x, qr_y, width=qr_size, height=qr_size)
@@ -122,7 +122,7 @@ def draw_page(c, uuids, rows, cols, start_x, start_y, cell_size, temp_dir, page_
             c.setFont("Helvetica", 8)
             text_width = c.stringWidth(name, "Helvetica", 8)
             text_x = x + (cell_size - text_width) / 2
-            text_y = y + qr_margin - 5  # Position text 5 points above QR code
+            text_y = qr_y - 2  # Position text relative to QR code position
             c.drawString(text_x, text_y, name)
 
 def generate_qr_sheets(num_pages=1, output_path=None):
