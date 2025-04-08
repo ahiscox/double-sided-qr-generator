@@ -1,6 +1,6 @@
-# QR Code Generator
+# Double-Sided QR Generator
 
-A Python tool for generating sheets of QR codes with unique UUIDs, optimized for double-sided printing and cutting.
+A Python tool that generates double-sided printable QR code sheets with unique UUIDs. Perfect for inventory tracking, asset management, or any application requiring two-sided QR codes. Features automatic alignment for double-sided printing, light cutting guides, and high error correction for reliable scanning.
 
 ## Features
 
@@ -16,23 +16,40 @@ A Python tool for generating sheets of QR codes with unique UUIDs, optimized for
 ## Requirements
 
 - Python 3.6 or higher
-- Required packages (install via `pip install -r requirements.txt`):
+- Required packages:
   - qrcode
   - reportlab
   - Pillow
 
 ## Installation
 
+### Using Pixi (Recommended)
+
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd qrcode_generator
+cd double-sided-qr-generator
 ```
 
-2. Install dependencies:
+2. Install dependencies using Pixi:
+```bash
+pixi install
+```
+
+### Using pip (Alternative)
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd double-sided-qr-generator
+```
+
+2. Install dependencies using pip:
 ```bash
 pip install -r requirements.txt
 ```
+
+> **Note:** While pip installation should work, it has not been tested. The Pixi installation method is the recommended and tested approach.
 
 ## Usage
 
@@ -41,7 +58,11 @@ pip install -r requirements.txt
 Generate QR code sheets from the command line:
 
 ```bash
-python layout_test.py --pages 3
+# Using Pixi
+pixi run python generate.py --pages 3
+
+# Using pip
+python generate.py --pages 3
 ```
 
 This will generate 6 pages (3 sets of front/back pages) with unique QR codes on each set.
@@ -54,7 +75,7 @@ Arguments:
 You can also use the generator in your own Python scripts:
 
 ```python
-from layout_test import create_layout_test
+from generate import create_layout_test
 
 # Generate 3 sets of pages (6 pages total)
 create_layout_test(num_pages=3)
@@ -91,7 +112,7 @@ The QR codes are arranged so that when printed double-sided:
 
 ```bash
 # Generate 3 sets of pages (6 pages total)
-python layout_test.py --pages 3
+pixi run python generate.py --pages 3
 ```
 
 This will create `qr_codes.pdf` with:
