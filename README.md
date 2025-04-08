@@ -57,7 +57,7 @@ Run the script to generate QR code sheets:
 
 ```bash
 # Using Pixi
-pixi run generate --pages 1 --output /path/to/output.pdf
+pixi run python generate.py --pages 1 --output /path/to/output.pdf
 
 # Using pip
 python generate.py --pages 1 --output /path/to/output.pdf
