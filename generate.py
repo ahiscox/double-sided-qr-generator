@@ -9,9 +9,29 @@ import tempfile
 import uuid
 import argparse
 from PIL import Image
+import coolname
+import hashlib
+import random
 
 # Create a light gray color (80% white, 20% black)
 light_gray = Color(0.8, 0.8, 0.8)
+
+def load_word_list():
+    """Load words from wordlist.txt and split them into adjectives and nouns."""
+    with open('wordlist.txt', 'r') as f:
+        words = [line.strip() for line in f if line.strip()]
+    
+    # Split words into adjectives and nouns (simple heuristic)
+    adjectives = [word for word in words if len(word) > 3 and not word.endswith('s')]
+    nouns = [word for word in words if len(word) > 3 and word.endswith('s')]
+    
+    # Add some non-plural nouns
+    nouns.extend([word for word in words if len(word) > 3 and not word.endswith('s')][:1000])
+    
+    return adjectives[:2000], nouns[:2000]  # Limit to 2000 words each for memory efficiency
+
+# Load word lists at module level
+ADJECTIVES, NOUNS = load_word_list()
 
 def generate_qr_code(uuid_str):
     """Generate a QR code with high error correction."""
@@ -25,6 +45,36 @@ def generate_qr_code(uuid_str):
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
     return img
+
+def generate_name_from_uuid(uuid_str):
+    """Generate a human-readable name from a UUID string."""
+    # Convert UUID to a number to use for deterministic selection
+    uuid_int = int(uuid_str.replace('-', ''), 16)
+    
+    # Create a custom configuration for 2-word names
+    config = {
+        'all': {
+            'type': 'cartesian',
+            'lists': ['adjective', 'noun']
+        },
+        'adjective': {
+            'type': 'words',
+            'words': ADJECTIVES
+        },
+        'noun': {
+            'type': 'words',
+            'words': NOUNS
+        }
+    }
+    
+    # Create a generator with our custom config
+    generator = coolname.RandomGenerator(config)
+    
+    # Use the UUID to seed the random number generator
+    random.seed(uuid_int)
+    
+    # Generate the name
+    return generator.generate_slug()
 
 def draw_page(c, uuids, rows, cols, start_x, start_y, cell_size, temp_dir, page_set, is_back_page=False):
     """Draw a page of QR codes, optionally flipped for the back page."""
@@ -66,6 +116,14 @@ def draw_page(c, uuids, rows, cols, start_x, start_y, cell_size, temp_dir, page_
             
             # Draw QR code
             c.drawImage(temp_file_path, qr_x, qr_y, width=qr_size, height=qr_size)
+            
+            # Generate and draw human-readable name
+            name = generate_name_from_uuid(uuid_str)
+            c.setFont("Helvetica", 8)
+            text_width = c.stringWidth(name, "Helvetica", 8)
+            text_x = x + (cell_size - text_width) / 2
+            text_y = y + qr_margin - 5  # Position text 5 points above QR code
+            c.drawString(text_x, text_y, name)
 
 def generate_qr_sheets(num_pages=1, output_path=None):
     """Generate a PDF containing double-sided QR code sheets.

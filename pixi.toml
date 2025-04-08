@@ -1,12 +1,17 @@
-[workspace]
-authors = ["Anthony Hiscox <anthonyhiscox@gmail.com>"]
-channels = ["conda-forge"]
-name = "qrcode_generator"
-platforms = ["linux-64"]
+[project]
+name = "double-sided-qr-generator"
 version = "0.1.0"
-
-[tasks]
+description = "A tool for generating double-sided QR code sheets"
+authors = []
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-64", "win-64"]
 
 [dependencies]
-reportlab = ">=4.3.1,<5"
-qrcode = ">=8.1,<9"
+python = ">=3.8"
+qrcode = ">=7.4.2"
+reportlab = ">=4.0.4"
+pillow = ">=10.0.0"
+coolname = ">=2.0.0"
+
+[tasks]
+generate = "python generate.py"
