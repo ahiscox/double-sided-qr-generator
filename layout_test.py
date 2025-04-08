@@ -1,7 +1,7 @@
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
-from reportlab.lib.colors import black
+from reportlab.lib.colors import black, Color
 import qrcode
 import io
 import os
@@ -9,6 +9,9 @@ import tempfile
 import uuid
 import argparse
 from PIL import Image
+
+# Create a light gray color (80% white, 20% black)
+light_gray = Color(0.8, 0.8, 0.8)
 
 def generate_qr_code(uuid_str):
     """Generate a QR code with high error correction."""
@@ -44,7 +47,8 @@ def draw_page(c, uuids, rows, cols, start_x, start_y, cell_size, temp_dir, page_
             x = start_x + j * cell_size
             y = start_y + (rows - 1 - i) * cell_size
             
-            # Draw cell border
+            # Draw cell border with light gray color
+            c.setStrokeColor(light_gray)
             c.rect(x, y, cell_size, cell_size)
             
             # Generate QR code
@@ -99,12 +103,12 @@ def create_layout_test(num_pages=1):
             # Draw first page of the set
             draw_page(c, uuids, rows, cols, start_x, start_y, cell_size, temp_dir, page_set)
             
-            # Add page dimensions and grid info to first page
-            c.setFont("Helvetica", 10)
-            c.drawString(50, 50, f"Page: {page_width/inch:.1f} x {page_height/inch:.1f} inches")
-            c.drawString(50, 35, f"Grid: {cols} columns x {rows} rows")
-            c.drawString(50, 20, f"Cell size: {cell_size/inch:.2f} inches")
-            c.drawString(50, 5, f"Set {page_set + 1} of {num_pages}")
+            # # Add page dimensions and grid info to first page
+            # c.setFont("Helvetica", 10)
+            # c.drawString(50, 50, f"Page: {page_width/inch:.1f} x {page_height/inch:.1f} inches")
+            # c.drawString(50, 35, f"Grid: {cols} columns x {rows} rows")
+            # c.drawString(50, 20, f"Cell size: {cell_size/inch:.2f} inches")
+            # c.drawString(50, 5, f"Set {page_set + 1} of {num_pages}")
             
             # Start second page
             c.showPage()
@@ -112,12 +116,12 @@ def create_layout_test(num_pages=1):
             # Draw second page (flipped)
             draw_page(c, uuids, rows, cols, start_x, start_y, cell_size, temp_dir, page_set, is_back_page=True)
             
-            # Add page dimensions and grid info to second page
-            c.setFont("Helvetica", 10)
-            c.drawString(50, 50, f"Page: {page_width/inch:.1f} x {page_height/inch:.1f} inches")
-            c.drawString(50, 35, f"Grid: {cols} columns x {rows} rows")
-            c.drawString(50, 20, f"Cell size: {cell_size/inch:.2f} inches")
-            c.drawString(50, 5, f"Set {page_set + 1} of {num_pages}")
+            # # Add page dimensions and grid info to second page
+            # c.setFont("Helvetica", 10)
+            # c.drawString(50, 50, f"Page: {page_width/inch:.1f} x {page_height/inch:.1f} inches")
+            # c.drawString(50, 35, f"Grid: {cols} columns x {rows} rows")
+            # c.drawString(50, 20, f"Cell size: {cell_size/inch:.2f} inches")
+            # c.drawString(50, 5, f"Set {page_set + 1} of {num_pages}")
             
             # If this isn't the last set, start a new page
             if page_set < num_pages - 1:
