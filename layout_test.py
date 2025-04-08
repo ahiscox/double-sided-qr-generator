@@ -6,6 +6,7 @@ import qrcode
 import io
 import os
 import tempfile
+import uuid
 from PIL import Image
 
 def generate_qr_code(uuid_str):
@@ -85,8 +86,8 @@ def create_layout_test():
     # Create PDF
     c = canvas.Canvas("layout_test.pdf", pagesize=letter)
     
-    # Generate unique IDs for each QR code
-    uuids = [str(i) for i in range(rows * cols)]  # Using simple numbers for testing
+    # Generate unique UUIDs for each QR code
+    uuids = [str(uuid.uuid4()) for _ in range(rows * cols)]
     
     # Create temporary directory for QR code images
     temp_dir = tempfile.mkdtemp()
