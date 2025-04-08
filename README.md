@@ -53,71 +53,34 @@ pip install -r requirements.txt
 
 ## Usage
 
-### Command Line
-
-Generate QR code sheets from the command line:
+Run the script to generate QR code sheets:
 
 ```bash
 # Using Pixi
-pixi run python generate.py --pages 3
+pixi run generate --pages 1 --output /path/to/output.pdf
 
 # Using pip
-python generate.py --pages 3
+python generate.py --pages 1 --output /path/to/output.pdf
 ```
 
-This will generate 6 pages (3 sets of front/back pages) with unique QR codes on each set.
+The script will generate a PDF file at the specified location. If no output path is provided, it will create `qr_codes.pdf` in the current directory. Each page set consists of two pages - a front page with QR codes and a back page with corresponding numbers.
 
-Arguments:
+### Command Line Arguments
+
 - `--pages`: Number of page sets to generate (each set is 2 pages). Default is 1.
+- `--output`: Path where the PDF should be saved. Optional, defaults to `qr_codes.pdf` in current directory.
 
-### As a Python Module
+### Python Module Usage
 
 You can also use the generator in your own Python scripts:
 
 ```python
-from generate import create_layout_test
+from generate import generate_qr_sheets
 
-# Generate 3 sets of pages (6 pages total)
-create_layout_test(num_pages=3)
+# Generate 3 sets of pages (6 pages total) to a specific location
+generate_qr_sheets(num_pages=3, output_path="/path/to/output.pdf")
 ```
 
-## Output
+## How it Works
 
-The script generates a PDF file named `qr_codes.pdf` with the following characteristics:
-
-- 4 columns of QR codes per page
-- QR codes sized to fit the page with proper margins
-- Light gray cutting guides
-- Each QR code contains a unique UUID
-- Front and back pages are properly aligned for double-sided printing
-- Each set of pages (front/back) has its own unique QR codes
-
-## Layout Details
-
-- Page size: Standard letter (8.5" x 11")
-- Margins: 0.5 inches
-- QR code size: Automatically calculated to fit 4 columns
-- QR code margin: 10 pixels within each cell
-- Error correction: High (H) for reliable scanning
-- Border color: Light gray (RGB: 0.8, 0.8, 0.8)
-
-## Double-Sided Printing
-
-The QR codes are arranged so that when printed double-sided:
-1. Each QR code on the back aligns with its corresponding front code
-2. The back page is mirrored to ensure proper alignment
-3. Scanning either side of a cut-out piece will yield the same UUID
-
-## Example
-
-```bash
-# Generate 3 sets of pages (6 pages total)
-pixi run python generate.py --pages 3
-```
-
-This will create `qr_codes.pdf` with:
-- Pages 1-2: First set of unique QR codes
-- Pages 3-4: Second set of unique QR codes
-- Pages 5-6: Third set of unique QR codes
-
-Each set has its own unique QR codes, and the front/back pages are properly aligned for double-sided printing. 
+The script `generate.py`

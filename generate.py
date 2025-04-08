@@ -67,7 +67,13 @@ def draw_page(c, uuids, rows, cols, start_x, start_y, cell_size, temp_dir, page_
             # Draw QR code
             c.drawImage(temp_file_path, qr_x, qr_y, width=qr_size, height=qr_size)
 
-def create_layout_test(num_pages=1):
+def generate_qr_sheets(num_pages=1, output_path=None):
+    """Generate a PDF containing double-sided QR code sheets.
+    
+    Args:
+        num_pages (int): Number of page sets to generate (each set is 2 pages - front and back)
+        output_path (str, optional): Path where the PDF should be saved. If None, defaults to 'qr_codes.pdf' in current directory.
+    """
     # PDF dimensions
     page_width, page_height = letter
     margin = 0.5 * inch
@@ -88,8 +94,12 @@ def create_layout_test(num_pages=1):
     start_x = (page_width - total_grid_width) / 2
     start_y = (page_height - total_grid_height) / 2
     
+    # Set default output path if none provided
+    if output_path is None:
+        output_path = "qr_codes.pdf"
+    
     # Create PDF with absolute path
-    output_path = os.path.abspath("qr_codes.pdf")
+    output_path = os.path.abspath(output_path)
     c = canvas.Canvas(output_path, pagesize=letter)
     
     # Create temporary directory for QR code images
@@ -143,6 +153,7 @@ def create_layout_test(num_pages=1):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate QR code sheets')
     parser.add_argument('--pages', type=int, default=1, help='Number of page sets to generate (each set is 2 pages)')
+    parser.add_argument('--output', type=str, help='Path where the PDF should be saved (default: qr_codes.pdf)')
     args = parser.parse_args()
     
-    create_layout_test(args.pages) 
+    generate_qr_sheets(args.pages, args.output) 
