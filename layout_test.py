@@ -7,6 +7,7 @@ import io
 import os
 import tempfile
 import uuid
+import argparse
 from PIL import Image
 
 def generate_qr_code(uuid_str):
@@ -22,7 +23,7 @@ def generate_qr_code(uuid_str):
     img = qr.make_image(fill_color="black", back_color="white")
     return img
 
-def draw_page(c, uuids, rows, cols, start_x, start_y, cell_size, temp_dir, is_back_page=False):
+def draw_page(c, uuids, rows, cols, start_x, start_y, cell_size, temp_dir, page_set, is_back_page=False):
     """Draw a page of QR codes, optionally flipped for the back page."""
     # Draw grid and place QR codes
     for i in range(rows):
@@ -49,8 +50,8 @@ def draw_page(c, uuids, rows, cols, start_x, start_y, cell_size, temp_dir, is_ba
             # Generate QR code
             qr_img = generate_qr_code(uuid_str)
             
-            # Save QR code to temporary file
-            temp_file_path = os.path.join(temp_dir, f"qr_{idx}.png")
+            # Save QR code to temporary file with unique name for this page set
+            temp_file_path = os.path.join(temp_dir, f"qr_{page_set}_{idx}.png")
             qr_img.save(temp_file_path)
             
             # Calculate QR code position with 10px margin
@@ -62,7 +63,7 @@ def draw_page(c, uuids, rows, cols, start_x, start_y, cell_size, temp_dir, is_ba
             # Draw QR code
             c.drawImage(temp_file_path, qr_x, qr_y, width=qr_size, height=qr_size)
 
-def create_layout_test():
+def create_layout_test(num_pages=1):
     # PDF dimensions
     page_width, page_height = letter
     margin = 0.5 * inch
@@ -83,46 +84,61 @@ def create_layout_test():
     start_x = (page_width - total_grid_width) / 2
     start_y = (page_height - total_grid_height) / 2
     
-    # Create PDF
-    c = canvas.Canvas("layout_test.pdf", pagesize=letter)
-    
-    # Generate unique UUIDs for each QR code
-    uuids = [str(uuid.uuid4()) for _ in range(rows * cols)]
+    # Create PDF with absolute path
+    output_path = os.path.abspath("qr_codes.pdf")
+    c = canvas.Canvas(output_path, pagesize=letter)
     
     # Create temporary directory for QR code images
     temp_dir = tempfile.mkdtemp()
     
     try:
-        # Draw first page
-        draw_page(c, uuids, rows, cols, start_x, start_y, cell_size, temp_dir)
+        for page_set in range(num_pages):
+            # Generate unique UUIDs for each QR code in this set
+            uuids = [str(uuid.uuid4()) for _ in range(rows * cols)]
+            
+            # Draw first page of the set
+            draw_page(c, uuids, rows, cols, start_x, start_y, cell_size, temp_dir, page_set)
+            
+            # Add page dimensions and grid info to first page
+            c.setFont("Helvetica", 10)
+            c.drawString(50, 50, f"Page: {page_width/inch:.1f} x {page_height/inch:.1f} inches")
+            c.drawString(50, 35, f"Grid: {cols} columns x {rows} rows")
+            c.drawString(50, 20, f"Cell size: {cell_size/inch:.2f} inches")
+            c.drawString(50, 5, f"Set {page_set + 1} of {num_pages}")
+            
+            # Start second page
+            c.showPage()
+            
+            # Draw second page (flipped)
+            draw_page(c, uuids, rows, cols, start_x, start_y, cell_size, temp_dir, page_set, is_back_page=True)
+            
+            # Add page dimensions and grid info to second page
+            c.setFont("Helvetica", 10)
+            c.drawString(50, 50, f"Page: {page_width/inch:.1f} x {page_height/inch:.1f} inches")
+            c.drawString(50, 35, f"Grid: {cols} columns x {rows} rows")
+            c.drawString(50, 20, f"Cell size: {cell_size/inch:.2f} inches")
+            c.drawString(50, 5, f"Set {page_set + 1} of {num_pages}")
+            
+            # If this isn't the last set, start a new page
+            if page_set < num_pages - 1:
+                c.showPage()
         
-        # Add page dimensions and grid info to first page
-        c.setFont("Helvetica", 10)
-        c.drawString(50, 50, f"Page: {page_width/inch:.1f} x {page_height/inch:.1f} inches")
-        c.drawString(50, 35, f"Grid: {cols} columns x {rows} rows")
-        c.drawString(50, 20, f"Cell size: {cell_size/inch:.2f} inches")
-        
-        # Start second page
-        c.showPage()
-        
-        # Draw second page (flipped)
-        draw_page(c, uuids, rows, cols, start_x, start_y, cell_size, temp_dir, is_back_page=True)
-        
-        # Add page dimensions and grid info to second page
-        c.setFont("Helvetica", 10)
-        c.drawString(50, 50, f"Page: {page_width/inch:.1f} x {page_height/inch:.1f} inches")
-        c.drawString(50, 35, f"Grid: {cols} columns x {rows} rows")
-        c.drawString(50, 20, f"Cell size: {cell_size/inch:.2f} inches")
-        
+        # Save the PDF
         c.save()
+        print(f"PDF generated successfully at: {output_path}")
     
     finally:
         # Clean up temporary files
-        for i in range(rows * cols):
-            temp_file_path = os.path.join(temp_dir, f"qr_{i}.png")
-            if os.path.exists(temp_file_path):
-                os.remove(temp_file_path)
+        for page_set in range(num_pages):
+            for i in range(rows * cols):
+                temp_file_path = os.path.join(temp_dir, f"qr_{page_set}_{i}.png")
+                if os.path.exists(temp_file_path):
+                    os.remove(temp_file_path)
         os.rmdir(temp_dir)
 
 if __name__ == "__main__":
-    create_layout_test() 
+    parser = argparse.ArgumentParser(description='Generate QR code sheets')
+    parser.add_argument('--pages', type=int, default=1, help='Number of page sets to generate (each set is 2 pages)')
+    args = parser.parse_args()
+    
+    create_layout_test(args.pages) 
